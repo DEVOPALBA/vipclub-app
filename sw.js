@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vipclub-static-v3';
+const CACHE_NAME = 'vipclub-static-v4';
 const STATIC_ASSETS = [
   './manifest.webmanifest',
   './logo.png',
@@ -28,6 +28,11 @@ self.addEventListener('fetch', event => {
   // ausgeliefert, sondern immer frisch vom Server geholt (network-first, kein Fallback-Cache-Rückgriff
   // für den Erstladevorgang), damit auch die installierte Home-Screen-PWA bei jedem Öffnen
   // garantiert die aktuelle Version inkl. Auto-Load der Gästeliste bekommt.
+  // Cross-Origin-Requests (z.B. an die Azure Function) nicht abfangen,
+  // sondern unveraendert an den Browser durchreichen (kein Caching, kein
+  // eigenes respondWith), damit CORS und Fehlerbehandlung normal funktionieren.
+  if (url.origin !== self.location.origin) return;
+
   const isAppShell = request.mode === 'navigate' ||
     url.pathname.endsWith('/index.html') ||
     url.pathname.endsWith('/');
