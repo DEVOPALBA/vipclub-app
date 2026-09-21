@@ -1,0 +1,996 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#1e536f" />
+  <meta name="application-name" content="VIPCLUB" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <title>VIPCLUB – ALBA BERLIN</title>
+  <style>
+    :root {
+      --ink: #14212b;
+      --muted: #6d7b84;
+      --line: #d9e1e5;
+      --soft: #f4f7f8;
+      --paper: #ffffff;
+      --alba-yellow: #f7c800;
+      --alba-yellow-soft: #fff3b7;
+      --blue: #1e536f;
+      --blue-soft: #e7f0f4;
+      --green: #247a63;
+      --shadow: 0 18px 50px rgba(20, 33, 43, .10);
+      --radius: 22px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #eaf0f2;
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; touch-action: manipulation; }
+    body { touch-action: manipulation; }
+    .app { max-width: 1500px; margin: 0 auto; padding: 18px; }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 18px;
+      padding: 12px 4px 20px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark {
+      width: 82px; height: 58px; padding: 0; border-radius: 0;
+      display: flex; align-items: center; justify-content: flex-start;
+      background: transparent; overflow: visible;
+    }
+    .brand-mark img {
+      display: block; width: 78px; height: 58px; object-fit: contain; object-position: left center;
+    }
+    .brand small { display: block; color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .03em; }
+    .brand strong { display: block; margin-top: 2px; font-size: 18px; letter-spacing: -.03em; }
+    .topbar-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    .topbar-actions .load-list-btn { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 10px 14px; background: var(--blue); color: #fff; border-color: var(--blue); box-shadow: 0 8px 18px rgba(30,83,111,.18); font-weight: 850; }
+    .topbar-actions .load-list-btn:hover { background: #fff; border-color: var(--blue); color: var(--blue); transform: translateY(-1px); }
+    .load-list-btn:focus-visible { outline: 3px solid rgba(247,200,0,.65); outline-offset: 3px; }
+    .load-list-icon { font-size: 16px; line-height: 1; }
+    .confirm-dialog { width: min(440px, calc(100% - 32px)); border: 1px solid var(--line); border-radius: 18px; padding: 0; color: var(--ink); box-shadow: 0 24px 70px rgba(20,33,43,.28); }
+    .confirm-dialog::backdrop { background: rgba(20,33,43,.42); backdrop-filter: blur(3px); }
+    .confirm-dialog-content { padding: 22px; }
+    .confirm-dialog h2 { margin: 0 0 10px; font-size: 20px; letter-spacing: -.04em; }
+    .confirm-dialog p { font-size: 14px; line-height: 1.5; }
+    .confirm-dialog-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 22px; }
+    .confirm-dialog-actions .btn { min-width: 92px; min-height: 44px; }
+    .confirm-dialog-actions .btn.confirm { background: var(--alba-yellow); border-color: #c49d00; color: #171717; }
+    .confirm-dialog-actions .btn.confirm:hover { background: #e6b900; border-color: #a77f00; color: #171717; }
+    .load-status { color: var(--muted); font-size: 11px; font-weight: 750; text-align: right; }
+    .load-status.success { color: var(--green); }
+    .load-status.error { color: #a43b3b; }
+    .load-list-btn:disabled { opacity: .65; cursor: wait; transform: none; }
+    .prototype-pill { border: 1px solid #cbd7dc; background: rgba(255,255,255,.65); padding: 9px 13px; border-radius: 999px; color: var(--muted); font-size: 12px; font-weight: 750; }
+    .layout { display: grid; grid-template-columns: 310px minmax(0, 1fr); gap: 18px; align-items: stretch; }
+    .panel, .map-card { background: var(--paper); border: 1px solid rgba(217,225,229,.92); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .panel { padding: 20px; display: flex; flex-direction: column; min-height: 720px; }
+    .eyebrow { color: var(--blue); text-transform: uppercase; letter-spacing: .16em; font-size: 10px; font-weight: 900; }
+    h1 { font-size: clamp(24px, 3vw, 36px); line-height: .98; letter-spacing: -.065em; margin: 8px 0 12px; max-width: 540px; }
+    h2 { font-size: 17px; letter-spacing: -.03em; margin: 0; }
+    p { color: var(--muted); line-height: 1.45; margin: 0; }
+    .search-wrap { position: relative; margin: 14px 0 13px; }
+    .table-filter-wrap { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0 0 12px; }
+    .table-filter-option { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 750; color: var(--ink); cursor: pointer; }
+    .table-filter-option input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--blue); cursor: pointer; }
+    body.keyboard-open .table-filter-wrap { display: none !important; }
+    .search-wrap span { position: absolute; left: 14px; top: 9px; font-size: 22px; color: var(--muted); }
+    .search-clear { position: absolute; right: 7px; top: 6px; width: 32px; height: 32px; border: none; background: var(--soft); color: var(--muted); border-radius: 50%; font-size: 17px; line-height: 1; display: grid; place-items: center; padding: 0; }
+    .search-clear:hover { background: var(--line); color: var(--ink); }
+    .search-clear[hidden] { display: none; }
+    input[type=search] { width: 100%; border: 1px solid var(--line); background: var(--soft); border-radius: 14px; padding: 13px 38px 13px 42px; outline: none; color: var(--ink); }
+    input[type=search]::-webkit-search-cancel-button { display: none; }
+    input[type=search]:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(30,83,111,.12); }
+    .result-meta { display:flex; align-items:flex-start; justify-content:space-between; gap: 8px; margin: 4px 0 9px; color: var(--muted); font-size: 11px; min-width: 0; }
+    .last-updated { display:flex; flex-direction:column; align-items:flex-end; gap: 2px; min-width: 0; margin-left: auto; }
+    .load-status-label { color: var(--muted); white-space: nowrap; flex: 0 0 auto; }
+    .load-status { color: var(--muted); font-size: 11px; font-weight: 750; text-align: right; white-space: nowrap; flex: 0 0 auto; }
+    .load-status.success { color: var(--green); }
+    .load-status.error { color: #a43b3b; }
+    #resultCount { white-space: nowrap; flex: 0 0 auto; }
+    .sort-wrap { display:flex; align-items:center; justify-content:space-between; gap: 8px; margin: 0 0 10px; }
+    .sort-wrap label { color: var(--muted); font-size: 11px; font-weight: 850; }
+    .sort-wrap select { min-width: 156px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); padding: 8px 9px; font-size: 11px; font-weight: 750; outline: none; }
+    .sort-wrap select:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(30,83,111,.12); }
+    .guest-list { overflow: auto; min-height: 0; flex: 1; padding-right: 3px; }
+    .guest {
+      width: 100%; text-align: left; border: 1px solid transparent; background: transparent; border-radius: 14px;
+      padding: 11px 12px; display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 5px; color: var(--ink);
+      touch-action: manipulation;
+    }
+    .guest:hover { background: var(--soft); }
+    .guest.selected { background: var(--alba-yellow-soft); border-color: #e8c333; }
+    .guest.table-linked { box-shadow: 0 0 0 3px rgba(247,200,0,.35); }
+    .guest-name { font-weight: 780; font-size: 13px; }
+    .guest-org { color: var(--muted); font-size: 11px; margin-top: 3px; }
+    .table-chip { flex: none; background: #edf2f4; color: var(--blue); border-radius: 999px; padding: 5px 8px; font-size: 11px; font-weight: 900; }
+    .guest.selected .table-chip { background: var(--alba-yellow); color: #171717; }
+    .empty { color: var(--muted); font-size: 13px; padding: 24px 6px; }
+    .panel-footer { border-top: 1px solid var(--line); margin-top: 15px; padding-top: 15px; display: grid; gap: 9px; }
+    .map-card { overflow: hidden; display:flex; flex-direction:column; min-width: 0; }
+    .map-head { display:flex; justify-content:space-between; align-items:flex-start; gap: 14px; padding: 0; }
+    .map-head p { font-size: 13px; margin-top: 5px; }
+    .map-actions { display:flex; gap: 7px; flex-wrap: wrap; justify-content:flex-end; }
+    .btn { border: 1px solid var(--line); background: #fff; color: var(--ink); border-radius: 11px; padding: 9px 11px; font-weight: 800; font-size: 12px; }
+    .btn:hover { border-color: var(--blue); color: var(--blue); }
+    .btn.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+    .btn.primary:hover { background: var(--blue); }
+    .map-viewport { position: relative; margin: 0 14px 14px; min-height: 560px; border-radius: 17px; overflow: hidden; background: #f8fbfb; border: 1px solid var(--line); touch-action: none; overscroll-behavior: contain; user-select: none; -webkit-user-select: none; }
+    .map-viewport svg { display: block; width: 100%; height: 100%; min-height: 0; touch-action: none; }
+    .map-note { position:absolute; left: 15px; top: 15px; background: rgba(255,255,255,.88); backdrop-filter: blur(8px); border: 1px solid rgba(217,225,229,.9); border-radius: 12px; padding: 9px 11px; font-size: 11px; font-weight: 800; color: var(--blue); }
+    .focus-card { position:absolute; right: 15px; bottom: 15px; width: min(250px, calc(100% - 30px)); padding: 15px; border-radius: 16px; background: rgba(20,33,43,.95); color: #fff; box-shadow: 0 16px 36px rgba(20,33,43,.24); }
+    .focus-card .label { color: #b7c4ca; font-size: 10px; text-transform:uppercase; letter-spacing:.13em; font-weight: 900; }
+    .focus-card h3 { margin: 4px 0 7px; font-size: 24px; letter-spacing: -.06em; }
+    .focus-card p { color: #d3dde1; font-size: 12px; }
+    .focus-guests { display:flex; gap: 5px; flex-wrap: wrap; margin-top: 10px; }
+    .focus-guests span { background: rgba(247,200,0,.16); color: #ffe57a; padding: 5px 7px; border-radius: 8px; font-size: 11px; font-weight: 750; }
+    .notes-card { margin: 0 0 12px; padding: 12px 13px 12px 14px; border: 1px solid #c8dce5; border-left: 4px solid var(--blue); border-radius: 12px; background: var(--blue-soft); }
+    .notes-card[hidden] { display: none; }
+    .notes-title { color: var(--blue); font-size: 11px; font-weight: 950; text-transform: uppercase; letter-spacing: .11em; }
+    .notes-list { margin: 8px 0 0; padding-left: 18px; color: var(--ink); font-size: 12px; line-height: 1.45; }
+    .notes-list li + li { margin-top: 4px; }
+    .guest-main { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+    .guest-remark { color: var(--muted); font-size: 11px; line-height: 1.3; white-space: normal; }
+    .guest-facts { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+    .pax-chip { background: var(--blue-soft); color: var(--blue); border-radius: 999px; padding: 5px 8px; font-size: 11px; font-weight: 900; }
+    .table-name { fill: var(--ink); font-weight: 950; font-size: 15px; text-anchor: middle; pointer-events: none; paint-order: stroke; stroke: #f8fbfb; stroke-width: 6px; stroke-linejoin: round; }
+    .table-pax { fill: var(--blue); font-weight: 950; font-size: 11px; text-anchor: middle; pointer-events: none; paint-order: stroke; stroke: #f8fbfb; stroke-width: 5px; stroke-linejoin: round; }
+    .svg-label { font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    .table-node { cursor: pointer; outline: none; }
+    .way { fill: none; stroke: #d3e0e3; stroke-width: 22; stroke-linecap: round; opacity: .48; }
+    .reference-line { fill: none; stroke: #bdccd0; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: .46; }
+    .reference-label { fill: #55727b; font: 850 18px Inter, sans-serif; letter-spacing: .1em; }
+    .entrance-label { fill: #55727b; font: 950 28px Inter, sans-serif; letter-spacing: .08em; }
+    .table-node .hit-area { fill: transparent; stroke: transparent; stroke-width: 34; }
+    .table-node .table-body { fill: #fff; stroke: #8099a2; stroke-width: 3; transition: fill .18s, stroke .18s, filter .18s; }
+    .table-node.compact .table-body { width: 54px; height: 30px; x: -27px; y: -15px; }
+    .table-node.block .table-body { width: 42px; height: 106px; x: -21px; y: -53px; rx: 6px; }
+    .table-node.square .table-body { width: 50px; height: 50px; x: -25px; y: -25px; }
+    .table-node text { fill: var(--ink); font-weight: 950; font-size: 20px; text-anchor: middle; dominant-baseline: middle; pointer-events: none; }
+    .table-node .capacity { display: none; }
+    .table-node:hover .table-body, .table-node:focus .table-body { stroke: var(--blue); stroke-width: 2.8; filter: drop-shadow(0 5px 4px rgba(30,83,111,.18)); }
+    .table-node .selection-ring { display: none; fill: none; pointer-events: none; }
+    .table-node.active .selection-ring { display: block; stroke: var(--alba-yellow); stroke-width: 9; opacity: .98; filter: drop-shadow(0 5px 5px rgba(167,127,0,.28)); }
+    .table-node.active .table-body { fill: var(--alba-yellow); stroke: #a77f00; stroke-width: 3.5; filter: drop-shadow(0 8px 7px rgba(167,127,0,.26)); }
+    .table-node.dimmed { opacity: .38; }
+    .area-title { fill: #63767f; font-size: 15px; font-weight: 850; letter-spacing: .07em; text-transform: uppercase; }
+    .area-sub { fill: #93a1a8; font-size: 11px; font-weight: 650; }
+    .orientation { fill: #8a9ba2; font-size: 10px; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
+    .map-footer { display:flex; justify-content:space-between; gap: 12px; align-items:center; padding: 0 24px 18px; color: var(--muted); font-size: 11px; }
+    .status { display:flex; align-items:center; gap: 7px; }
+    .status i { width: 8px; height:8px; background: var(--green); border-radius:50%; display:block; }
+    .preview-toolbar { max-width: 1500px; margin: 0 auto; padding: 8px 18px 0; display:flex; align-items:center; justify-content:flex-end; gap: 7px; }
+    .preview-toolbar .preview-label { margin-right: 4px; color: var(--muted); font-size: 11px; font-weight: 850; text-transform: uppercase; letter-spacing: .11em; }
+    .preview-toolbar .btn { padding: 7px 9px; font-size: 11px; }
+    .preview-toolbar .btn.active { background: var(--alba-yellow); border-color: #c49d00; color: #171717; }
+    .device-stage { min-width: 0; }
+    .device-stage.is-simulated { box-sizing: content-box; overflow: auto; background: #172832; border: 1px solid #2a424c; border-radius: 28px; padding: 10px; margin: 12px auto 24px; box-shadow: 0 20px 50px rgba(20,33,43,.22); }
+    .device-stage.preview-landscape { width: 1080px; height: 810px; }
+    .device-stage.preview-portrait { width: 810px; height: 1080px; }
+    .device-stage.is-simulated .app { width: 1080px; max-width: none; min-height: 810px; padding: 14px; background: #eaf0f2; }
+    .device-stage.preview-portrait .app { width: 810px; min-height: 1080px; }
+    .device-stage.preview-landscape .topbar { padding: 8px 2px 10px; }
+    .device-stage.preview-landscape .layout { grid-template-columns: 292px minmax(0, 1fr); gap: 10px; height: 724px; }
+    .device-stage.preview-landscape .panel { min-height: 0; height: 724px; padding: 14px; border-radius: 18px; }
+    .device-stage.preview-landscape .map-card { height: 724px; border-radius: 18px; }
+    .device-stage.preview-landscape .map-head { padding: 16px 18px 12px; }
+    .device-stage.preview-landscape .map-viewport { flex: 1; min-height: 0; margin: 0 10px 10px; }
+    .device-stage.preview-landscape svg { min-height: 0; height: 100%; }
+    .device-stage.preview-landscape .map-footer { padding: 0 18px 12px; }
+    .device-stage.preview-portrait .topbar { padding: 10px 2px 12px; }
+    .device-stage.preview-portrait .layout { grid-template-columns: 1fr; gap: 12px; }
+    .device-stage.preview-portrait .map-card { order: 1; }
+    .device-stage.preview-portrait .panel { order: 2; min-height: 520px; }
+    .device-stage.preview-portrait .map-viewport, .device-stage.preview-portrait svg { min-height: 520px; }
+    @media (min-width: 761px) and (max-width: 1180px) and (orientation: landscape) {
+      .preview-toolbar { display:none; }
+      .app { max-width: none; padding: 10px; }
+      .topbar { padding: 8px 2px 10px; }
+      .layout { grid-template-columns: 292px minmax(0, 1fr); gap: 10px; height: calc(100vh - 80px); }
+      .panel { min-height: 0; height: 100%; padding: 14px; border-radius: 18px; }
+      .map-card { height: 100%; border-radius: 18px; }
+      .map-head { padding: 16px 18px 12px; }
+      .map-viewport { flex: 1; min-height: 0; margin: 0 10px 10px; }
+      svg { min-height: 0; height: 100%; }
+      .map-footer { padding: 0 18px 12px; }
+    }
+    @media (min-width: 761px) and (max-width: 900px) and (orientation: portrait) {
+      .preview-toolbar { display:none; }
+      .app { max-width: none; padding: 10px; }
+      .layout { grid-template-columns: minmax(240px, 30%) minmax(0, 1fr); gap: 12px; }
+      .panel { order: 1; min-height: 0; height: calc(100dvh - 80px); }
+      .map-card { order: 2; height: calc(100dvh - 80px); }
+      .map-viewport, svg { min-height: 0; height: 100%; flex: 1; }
+    }
+    @media (max-width: 1000px) {
+      .app { padding: 12px; }
+      .layout { grid-template-columns: 280px minmax(0,1fr); gap: 12px; }
+      .panel { padding: 16px; }
+      .map-head { padding: 17px 18px 12px; }
+      .map-footer { padding: 0 18px 14px; }
+    }
+    @media (min-width: 901px) and (max-width: 1100px) and (orientation: portrait) {
+      .layout { grid-template-columns: minmax(260px, 30%) minmax(0, 1fr); gap: 14px; }
+    }
+    @media (max-width: 760px) {
+      .topbar { padding-bottom: 12px; }
+      .prototype-pill { display:none; }
+      .layout { grid-template-columns: 1fr; }
+      .panel { order: 1; min-height: 390px; }
+      .map-card { order: 2; }
+      .map-viewport, svg { min-height: 510px; }
+      .map-head { align-items: flex-start; }
+      .map-actions .btn:not(.primary) { display:none; }
+      .map-footer { flex-direction: column; align-items:flex-start; }
+    }
+    @media (max-width: 480px) {
+      .app { padding: 8px; }
+      .brand strong { font-size: 16px; }
+      .map-head h2 { font-size: 15px; }
+      .map-head p { font-size: 12px; }
+      .map-viewport { margin: 0 8px 8px; }
+      .map-note { left: 10px; top:10px; }
+      .focus-card { right:10px; bottom:10px; }
+    }
+    /* Produktivansicht auf dem iPad: keine Simulationsränder, volle nutzbare Höhe. */
+    .app { max-width: none; min-height: 100dvh; padding: 10px; }
+    .result-meta { flex-wrap: wrap; gap: 8px; min-width: 0; }
+    .last-updated { margin-left: 0; }
+    #resultCount, #loadStatus { white-space: nowrap; flex: 0 0 auto; }
+    #loadStatus { overflow: visible; text-overflow: clip; }
+    .panel-footer { margin-top: auto; flex: 0 0 auto; }
+    @media (min-width: 761px) and (orientation: landscape) {
+      .topbar { padding: 6px 2px 8px; }
+      .layout { height: calc(100dvh - 78px); }
+      .panel, .map-card { height: 100%; }
+      .panel { min-height: 0; }
+      .map-viewport { flex: 1; min-height: 0; }
+      .map-viewport svg { min-height: 0; height: 100%; }
+    }
+    @media (max-width: 1100px) and (orientation: landscape) {
+      .result-meta { font-size: 10px; gap: 5px; }
+      .last-updated { flex-wrap: wrap; row-gap: 2px; }
+      .load-status-label, .load-status { font-size: 9px; }
+    }
+
+    body.auth-locked #deviceStage { visibility: hidden; }
+    body.keyboard-open .layout { height: calc(var(--app-vh, 100dvh) - 16px) !important; }
+    body.keyboard-open .panel { height: 100% !important; min-height: 0 !important; padding: 10px !important; }
+    body.keyboard-open .app { padding: 8px !important; }
+    body.keyboard-open .topbar { display: none !important; }
+    body.keyboard-open .search-wrap { margin: 0 0 8px !important; }
+    body.keyboard-open .notes-card,
+    body.keyboard-open .result-meta,
+    body.keyboard-open .sort-wrap,
+    body.keyboard-open .panel-footer { display: none !important; }
+    body.keyboard-open .guest-list { min-height: 80px; }
+    .auth-gate {
+      position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center;
+      padding: 24px; background: linear-gradient(135deg, #14212b 0%, #1e536f 100%);
+    }
+    .auth-gate[hidden] { display: none; }
+    .auth-card {
+      width: min(390px, 100%); background: #fff; border: 1px solid rgba(255,255,255,.22);
+      border-radius: 24px; padding: 30px; box-shadow: 0 26px 90px rgba(0,0,0,.30); text-align: center;
+    }
+    .auth-logo { width: 112px; height: 112px; object-fit: contain; margin: 0 auto 18px; display: block; }
+    .auth-card h1 { max-width: none; margin: 0 0 8px; font-size: 30px; line-height: 1; letter-spacing: -.06em; }
+    .auth-card p { margin: 0 0 22px; font-size: 14px; }
+    .auth-form { display: grid; gap: 11px; text-align: left; }
+    .auth-form label { color: var(--ink); font-size: 12px; font-weight: 850; }
+    .auth-form input { width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 13px 14px; outline: none; color: var(--ink); background: var(--soft); }
+    .auth-form input:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(30,83,111,.14); }
+    .auth-submit { border: 1px solid #c49d00; border-radius: 12px; padding: 13px 14px; background: var(--alba-yellow); color: #171717; font-weight: 900; }
+    .auth-submit:hover { background: #e6b900; }
+    .auth-error { min-height: 18px; margin: 1px 0 0; color: #a43b3b; font-size: 12px; font-weight: 750; }
+  </style>
+</head>
+<body class="auth-locked">
+
+  <section class="auth-gate" id="authGate" aria-label="VIPCLUB Zugang">
+    <div class="auth-card">
+      <img class="auth-logo" src="logo.png" alt="ALBA BERLIN" />
+      <h1>VIPCLUB</h1>
+      <p>Bitte Passwort eingeben, um die App zu öffnen.</p>
+      <form class="auth-form" id="authForm" autocomplete="off">
+        <label for="authPassword">Passwort</label>
+        <input id="authPassword" name="password" type="password" inputmode="text" autocomplete="current-password" required autofocus />
+        <button class="auth-submit" type="submit">App öffnen</button>
+        <div class="auth-error" id="authError" role="alert" aria-live="polite"></div>
+      </form>
+    </div>
+  </section>
+
+  <main id="deviceStage" class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-label="ALBA BERLIN" role="img"><img src="logo.png" alt="ALBA BERLIN" /></div>
+        <div><small id="eventLabel">Testspiel 30.10.2026 Rasta Vechta</small><strong>VIPCLUB</strong></div>
+      </div>
+      <div class="topbar-actions">
+        <span class="result-meta" style="margin:0;"><span class="last-updated"><span class="load-status-label">Letzte Aktualisierung</span><span id="loadStatusTop" class="load-status" aria-live="polite">—</span></span></span>
+      </div>
+    </header>
+
+    <section class="layout">
+      <aside class="panel" aria-label="Gästeliste">
+        <label class="search-wrap" aria-label="Gast oder Tisch suchen">
+          <span>⌕</span>
+          <input id="search" type="search" placeholder="Name oder Tisch suchen" autocomplete="off" />
+          <button type="button" id="searchClear" class="search-clear" aria-label="Suche löschen" hidden>✕</button>
+        </label>
+        <div class="table-filter-wrap" role="group" aria-label="Tischfilter">
+          <label class="table-filter-option">
+            <input type="checkbox" id="filterOccupied" />
+            <span>Nur belegte Tische anzeigen</span>
+          </label>
+          <label class="table-filter-option">
+            <input type="checkbox" id="filterFree" />
+            <span>Nur freie Tische anzeigen</span>
+          </label>
+        </div>
+        <div class="notes-card" aria-label="Allgemeine Anmerkungen">
+          <div class="notes-title">Allgemeine Anmerkungen</div>
+          <ul class="notes-list" id="notesList">
+            <li>René kommt später</li>
+            <li>Arne ohne Ticket ok</li>
+          </ul>
+        </div>
+        <div class="result-meta"><span id="resultCount">3 Tische belegt</span><span class="last-updated"><span class="load-status-label">Letzte Aktualisierung</span><span id="loadStatus" class="load-status" aria-live="polite">—</span></span></div>
+        <div class="sort-wrap">
+          <label for="sortSelect">Sortieren</label>
+          <select id="sortSelect" aria-label="Gästeliste sortieren">
+            <option value="name-asc">Name A–Z</option>
+            <option value="name-desc">Name Z–A</option>
+            <option value="table-asc">Tischnummer aufsteigend</option>
+            <option value="table-desc">Tischnummer absteigend</option>
+          </select>
+        </div>
+        <div id="guestList" class="guest-list"></div>
+        <div class="panel-footer">
+          <button class="btn" id="clearBtn">Auswahl zurücksetzen</button>
+        </div>
+      </aside>
+
+      <section class="map-card" aria-label="Bereinigter Bestuhlungsplan">
+        <div class="map-viewport">
+          <svg id="map" viewBox="0 0 2000 1248" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Interaktiver, originalgetreu angelegter reduzierter Bestuhlungsplan">
+            <defs>
+              <pattern id="fineGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e6edef" stroke-width="1" />
+              </pattern>
+              <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#5f7780" flood-opacity=".12"/></filter>
+            </defs>
+            <rect width="2000" height="1248" fill="#f8fbfb" />
+            <rect x="18" y="18" width="1964" height="1212" rx="24" fill="url(#fineGrid)" opacity=".46" />
+
+            <!-- Ruhige Orientierungsebene: keine künstlichen Flächen, nur wenige echte Orientierungslinien. -->
+            <ellipse cx="1060" cy="600" rx="180" ry="92" fill="none" stroke="#b7c5c9" stroke-width="4" opacity=".34" transform="rotate(-19 1060 600)" />
+            <ellipse cx="1060" cy="600" rx="110" ry="50" fill="none" stroke="#b7c5c9" stroke-width="2.5" opacity=".34" transform="rotate(-19 1060 600)" />
+            <text x="1060" y="600" class="reference-label" text-anchor="middle" opacity=".55" transform="rotate(-19 1060 600)">CATERING</text>
+
+            <path d="M935 170 L1045 145 L1115 205 L1010 255 Z" fill="#e8f1f2" stroke="#9eb7bd" stroke-width="3" filter="url(#softShadow)" />
+            <text x="1015" y="205" class="reference-label" text-anchor="middle">PODEST</text>
+            <text x="1700" y="110" class="reference-label" text-anchor="middle" opacity=".55">EINGANG</text>
+
+            <g id="tables"></g>
+          </svg>
+          <div id="focusCard" class="focus-card" hidden></div>
+        </div>
+
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const deviceStage = document.getElementById('deviceStage');
+    const previewButtons = {};
+    function setPreview() {}
+
+    let guests = [
+      { id: 1, name: 'Anton Müller', org: 'Tischbelegung', table: 30, pax: 5, remark: 'Kommt später' },
+      { id: 2, name: 'Best', org: 'Tischbelegung', table: 15, pax: 4, remark: '' },
+      { id: 3, name: 'Max Mustermann', org: 'Tischbelegung', table: 78, pax: 2, remark: '' }
+    ];
+
+    // Tischzentren und Drehwinkel aus der gelieferten 2000×1248-PNG abgeleitet.
+    // Die Darstellung bleibt schematisch, die räumliche Lage bleibt originalgetreu.
+    const tableLayout = [
+      [1,1953,395,-18,'long'],
+      [2,1891,433,-18,'long'],
+      [3,1823,465,-18,'long'],
+      [4,1754,495,-18,'long'],
+      [5,1678,529,-18,'long'],
+      [6,1606,557,-18,'long'],
+      [7,1534,586,-18,'long'],
+      [8,1456,616,-18,'long'],
+      [9,1379,647,-18,'long'],
+      [10,1743,329,-18,'long'],
+      [11,1669,353,-18,'long'],
+      [12,1596,377,-18,'long'],
+      [13,1521,402,-18,'long'],
+      [14,1451,427,-18,'long'],
+      [15,1360,483,58,'long'],
+      [16,1309,520,58,'long'],
+      [17,1258,440,58,'long'],
+      [18,1314,408,58,'long'],
+      [19,1238,770,42,'long'],
+      [20,1298,818,42,'long'],
+      [21,1357,866,42,'long'],
+      [22,1419,918,42,'long'],
+      [23,1436,997,42,'long'],
+      [24,1397,1039,42,'long'],
+      [25,1358,1079,42,'long'],
+      [26,1317,1124,42,'long'],
+      [27,1273,1168,42,'long'],
+      [28,1214,1125,42,'square'],
+      [29,1152,1081,42,'long'],
+      [30,1093,1030,42,'long'],
+      [31,1026,974,42,'long'],
+      [32,1076,912,0,'square'],
+      [33,1154,997,0,'square'],
+      [34,1248,1052,0,'square'],
+      [35,1137,851,0,'square'],
+      [36,1204,935,0,'square'],
+      [37,1301,991,0,'square'],
+      [38,1186,808,42,'long'],
+      [39,1266,877,0,'square'],
+      [40,1357,941,42,'long'],
+      [41,764,662,45,'long'],
+      [42,711,611,45,'long'],
+      [43,672,652,45,'long'],
+      [44,629,696,45,'long'],
+      [45,588,746,45,'long'],
+      [46,547,788,45,'long'],
+      [47,888,458,45,'long'],
+      [48,940,407,45,'long'],
+      [49,989,363,45,'long'],
+      [50,821,407,45,'long'],
+      [51,860,366,45,'long'],
+      [52,899,329,45,'long'],
+      [53,935,295,45,'long'],
+      [54,742,292,45,'long'],
+      [55,787,249,45,'long'],
+      [56,837,196,45,'long'],
+      [57,779,142,45,'long'],
+      [58,727,190,45,'long'],
+      [59,685,237,45,'long'],
+      [60,668,73,47,'long'],
+      [61,621,115,47,'long'],
+      [62,576,160,47,'long'],
+      [63,447,360,38,'long'],
+      [64,398,433,38,'long'],
+      [65,349,505,38,'long'],
+      [66,306,579,38,'long'],
+      [67,260,654,38,'long'],
+      [68,212,726,38,'long'],
+      [69,270,812,38,'long'],
+      [70,310,760,38,'long'],
+      [71,351,701,38,'long'],
+      [72,390,652,38,'long'],
+      [73,429,594,38,'long'],
+      [74,468,536,38,'long'],
+      [75,508,484,38,'long'],
+      [76,545,428,38,'long'],
+      [77,1700,168,70,'long'],
+      [78,1638,190,70,'long'],
+      [79,1579,213,70,'long'],
+      [80,1517,234,70,'long'],
+      [81,1450,258,70,'long'],
+      [82,1386,280,70,'long'],
+      [83,1727,236,70,'long'],
+      [84,1664,260,70,'long'],
+      [85,1605,279,70,'long'],
+      [86,1545,300,70,'long'],
+      [87,1478,327,70,'long'],
+      [88,1413,347,70,'long'],
+      [89,1282,190,70,'block'],
+      [90,1353,166,70,'block'],
+      [91,1256,115,70,'block'],
+      [92,1323,88,70,'block'],
+      [93,709,515,45,'long'],
+      [94,759,562,45,'long'],
+      [95,809,611,45,'long'],
+      [96,657,784,45,'long'],
+      [97,607,846,45,'long'],
+      [98,669,901,45,'long'],
+      [99,722,840,45,'long'],
+      [100,768,791,45,'long']
+    ];
+    const tablesEl = document.getElementById('tables');
+    const guestListEl = document.getElementById('guestList');
+    const searchEl = document.getElementById('search');
+    const searchClearBtn = document.getElementById('searchClear');
+    const sortSelect = document.getElementById('sortSelect');
+    const focusCard = document.getElementById('focusCard');
+    const map = document.getElementById('map');
+    const resultCount = document.getElementById('resultCount');
+    const filterOccupiedEl = document.getElementById('filterOccupied');
+    const filterFreeEl = document.getElementById('filterFree');
+    function isFreeGuest(g) { return g.name.trim().toLowerCase() === 'frei'; }
+    let selectedTable = null;
+    let selectedGuest = null;
+    let initialViewBox = '0 0 2000 1248';
+    const activePointers = new Map();
+    let pinchStart = null;
+    let panStart = null;
+    let suppressNextClick = false;
+    let suppressClickTimer = null;
+
+    function setMapViewBox(x, y, width, height) {
+      const minWidth = 520;
+      const maxWidth = 2000;
+      const aspect = 2000 / 1248;
+      width = Number.isFinite(width) ? width : maxWidth;
+      height = Number.isFinite(height) ? height : width / aspect;
+      if (width >= maxWidth * 0.985 || height >= 1248 * 0.985) {
+        resetMapView();
+        return;
+      }
+      width = Math.max(minWidth, Math.min(maxWidth, width));
+      height = width / aspect;
+      x = Number.isFinite(x) ? x : 0;
+      y = Number.isFinite(y) ? y : 0;
+      x = Math.max(0, Math.min(2000 - width, x));
+      y = Math.max(0, Math.min(1248 - height, y));
+      map.setAttribute('viewBox', `${x} ${y} ${width} ${height}`);
+    }
+
+    function resetMapView() {
+      map.setAttribute('viewBox', initialViewBox);
+    }
+
+    function currentViewBox() {
+      return map.getAttribute('viewBox').split(' ').map(Number);
+    }
+
+    function contentMetrics(viewBox = currentViewBox()) {
+      const rect = map.getBoundingClientRect();
+      const scale = Math.min(rect.width / viewBox[2], rect.height / viewBox[3]);
+      const width = viewBox[2] * scale;
+      const height = viewBox[3] * scale;
+      return {
+        left: rect.left + (rect.width - width) / 2,
+        top: rect.top + (rect.height - height) / 2,
+        width,
+        height,
+        scale
+      };
+    }
+
+    function pointerDistance(a, b) {
+      return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+    }
+
+    function pointerCenter(a, b) {
+      return { x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 };
+    }
+
+    function clientToViewBox(clientX, clientY, viewBox) {
+      const metrics = contentMetrics([viewBox.x, viewBox.y, viewBox.width, viewBox.height]);
+      return {
+        x: viewBox.x + ((clientX - metrics.left) / metrics.width) * viewBox.width,
+        y: viewBox.y + ((clientY - metrics.top) / metrics.height) * viewBox.height
+      };
+    }
+
+    function startPan(event) {
+      const [x, y, width, height] = currentViewBox();
+      if (width >= 1990 || height >= 1240) return;
+      const metrics = contentMetrics([x, y, width, height]);
+      panStart = {
+        pointerId: event.pointerId,
+        clientX: event.clientX,
+        clientY: event.clientY,
+        x,
+        y,
+        width,
+        height,
+        scale: metrics.scale,
+        moved: false
+      };
+    }
+
+    function suppressFollowingClick() {
+      suppressNextClick = true;
+      window.clearTimeout(suppressClickTimer);
+      suppressClickTimer = window.setTimeout(() => { suppressNextClick = false; }, 500);
+    }
+
+    function updatePan(event) {
+      if (!panStart || activePointers.size !== 1 || panStart.pointerId !== event.pointerId) return;
+      const dx = event.clientX - panStart.clientX;
+      const dy = event.clientY - panStart.clientY;
+      if (!panStart.moved && Math.hypot(dx, dy) < 6) return;
+      panStart.moved = true;
+      suppressFollowingClick();
+      event.preventDefault();
+      setMapViewBox(
+        panStart.x - dx / panStart.scale,
+        panStart.y - dy / panStart.scale,
+        panStart.width,
+        panStart.height
+      );
+    }
+
+    function startPinch() {
+      const [a, b] = [...activePointers.values()];
+      const [x, y, width, height] = currentViewBox();
+      const center = pointerCenter(a, b);
+      const focalPoint = clientToViewBox(center.x, center.y, { x, y, width, height });
+      panStart = null;
+      pinchStart = {
+        distance: pointerDistance(a, b),
+        x, y, width, height,
+        focalClient: center,
+        focalPoint
+      };
+    }
+
+    function updatePinch() {
+      if (!pinchStart || activePointers.size < 2) return;
+      const [a, b] = [...activePointers.values()];
+      const distance = pointerDistance(a, b);
+      if (!distance || !pinchStart.distance) return;
+      const scale = distance / pinchStart.distance;
+      const width = pinchStart.width / scale;
+      const height = pinchStart.height / scale;
+      const metrics = contentMetrics([pinchStart.x, pinchStart.y, pinchStart.width, pinchStart.height]);
+      const focalXRatio = (pinchStart.focalClient.x - metrics.left) / metrics.width;
+      const focalYRatio = (pinchStart.focalClient.y - metrics.top) / metrics.height;
+      const x = pinchStart.focalPoint.x - focalXRatio * width;
+      const y = pinchStart.focalPoint.y - focalYRatio * height;
+      setMapViewBox(x, y, width, height);
+    }
+
+    map.addEventListener('click', event => {
+      if (!suppressNextClick) return;
+      event.preventDefault();
+      event.stopPropagation();
+      suppressNextClick = false;
+      window.clearTimeout(suppressClickTimer);
+    }, true);
+
+    map.addEventListener('pointerdown', event => {
+      if (event.pointerType !== 'touch' && event.pointerType !== 'mouse') return;
+      activePointers.set(event.pointerId, event);
+      map.setPointerCapture?.(event.pointerId);
+      if (activePointers.size === 1) startPan(event);
+      if (activePointers.size === 2) {
+        event.preventDefault();
+        startPinch();
+      }
+    }, { passive: false });
+
+    map.addEventListener('pointermove', event => {
+      if (!activePointers.has(event.pointerId)) return;
+      activePointers.set(event.pointerId, event);
+      if (activePointers.size >= 2) {
+        event.preventDefault();
+        updatePinch();
+      } else {
+        updatePan(event);
+      }
+    }, { passive: false });
+
+    function endPointer(event) {
+      const wasPanning = panStart && panStart.pointerId === event.pointerId && panStart.moved;
+      activePointers.delete(event.pointerId);
+      if (wasPanning) suppressFollowingClick();
+      if (activePointers.size < 2) pinchStart = null;
+      if (activePointers.size === 0) panStart = null;
+    }
+    map.addEventListener('pointerup', endPointer);
+    map.addEventListener('pointercancel', endPointer);
+    map.addEventListener('gesturestart', event => event.preventDefault(), { passive: false });
+    map.addEventListener('gesturechange', event => event.preventDefault(), { passive: false });
+    map.addEventListener('gestureend', event => event.preventDefault(), { passive: false });
+
+    function tableGuests(number) { return guests.filter(g => g.table === number); }
+    function makeTable(number, x, y, rotation, type = 'long') {
+      const ns = 'http://www.w3.org/2000/svg';
+      const g = document.createElementNS(ns, 'g');
+      g.classList.add('table-node');
+      g.dataset.table = number;
+      g.setAttribute('tabindex', '0');
+      g.setAttribute('role', 'button');
+      g.setAttribute('aria-label', `Tisch ${number}`);
+      g.classList.add(type === 'square' ? 'square' : 'compact');
+      g.setAttribute('transform', `translate(${x} ${y}) rotate(${rotation})`);
+      const ring = type === 'square'
+        ? '<rect class="selection-ring" x="-34" y="-34" width="68" height="68" rx="12"/>'
+        : type === 'block'
+          ? '<rect class="selection-ring" x="-30" y="-62" width="60" height="124" rx="12"/>'
+          : '<rect class="selection-ring" x="-43" y="-28" width="86" height="56" rx="12"/>';
+      g.innerHTML = `
+        <rect class="hit-area" x="-45" y="-38" width="90" height="76" rx="16"/>
+        ${ring}
+        <rect class="table-body" x="-34" y="-17" width="68" height="34" rx="7"/>
+        <text x="0" y="1" class="svg-label">${number}</text>`;
+      g.addEventListener('click', () => selectTable(number));
+      g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectTable(number); } });
+      return g;
+    }
+    tableLayout.forEach(([number,x,y,r,type]) => tablesEl.appendChild(makeTable(number,x,y,r,type)));
+
+    function sortedGuests(items) {
+      const mode = sortSelect.value;
+      return [...items].sort((a, b) => {
+        if (mode === 'name-asc') return a.name.localeCompare(b.name, 'de', { sensitivity: 'base' });
+        if (mode === 'name-desc') return b.name.localeCompare(a.name, 'de', { sensitivity: 'base' });
+        if (mode === 'table-asc') return a.table - b.table || a.name.localeCompare(b.name, 'de', { sensitivity: 'base' });
+        return b.table - a.table || a.name.localeCompare(b.name, 'de', { sensitivity: 'base' });
+      });
+    }
+
+    function renderGuests() {
+      const q = searchEl.value.trim().toLowerCase();
+      if (searchClearBtn) searchClearBtn.hidden = !searchEl.value;
+      let filtered = guests.filter(g => !q || g.name.toLowerCase().includes(q) || String(g.table).includes(q) || g.org.toLowerCase().includes(q) || g.remark.toLowerCase().includes(q));
+      if (filterOccupiedEl && filterOccupiedEl.checked) {
+        filtered = filtered.filter(g => !isFreeGuest(g));
+      } else if (filterFreeEl && filterFreeEl.checked) {
+        filtered = filtered.filter(isFreeGuest);
+      }
+      const visible = sortedGuests(filtered);
+      const allOccupiedTables = new Set(guests.map(g => g.table));
+      const freeRowCount = guests.filter(isFreeGuest).length;
+      const occupiedCount = Math.max(0, allOccupiedTables.size - freeRowCount);
+      resultCount.textContent = `${occupiedCount} ${occupiedCount === 1 ? 'Tisch' : 'Tische'} belegt`;
+      if (!visible.length) { guestListEl.innerHTML = '<div class="empty">Keine Treffer. Suche nach Name, Organisation oder Tischnummer.</div>'; return; }
+      guestListEl.innerHTML = visible.map(g => `
+        <button class="guest ${selectedGuest === g.id || selectedTable === g.table ? 'selected' : ''}" data-id="${g.id}" data-table="${g.table}">
+          <span class="guest-main"><span class="guest-name">${g.name}</span><span class="guest-org">Tischbelegung · Tisch ${g.table}</span>${g.remark ? `<span class="guest-remark">${g.remark}</span>` : ''}</span>
+          <span class="guest-facts"><span class="table-chip">Tisch ${g.table}</span><span class="pax-chip">${g.pax} PAX</span></span>
+        </button>`).join('');
+      guestListEl.querySelectorAll('.guest').forEach(btn => btn.addEventListener('click', () => selectGuest(Number(btn.dataset.id))));
+    }
+
+    function scrollToGuestForTable(number) {
+      const match = guestListEl.querySelector(`.guest[data-table="${number}"]`);
+      if (match) {
+        match.classList.add('table-linked');
+        match.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        window.setTimeout(() => match.classList.remove('table-linked'), 900);
+      }
+    }
+
+    function setTableVisuals() {
+      document.querySelectorAll('.table-node').forEach(node => {
+        const n = Number(node.dataset.table);
+        node.classList.toggle('active', selectedTable === n);
+        node.classList.toggle('dimmed', selectedTable !== null && selectedTable !== n);
+      });
+      renderGuests();
+    }
+
+    function showFocusCard(number) {
+      const gs = tableGuests(number);
+      focusCard.hidden = false;
+      focusCard.innerHTML = `<div class="label">Ausgewählter Tisch</div><h3>Tisch ${number}</h3><p>${gs.length ? `${gs.reduce((sum, g) => sum + Number(g.pax || 0), 0)} PAX · ${gs.length} ${gs.length === 1 ? 'Belegung' : 'Belegungen'}` : 'Noch keine Gäste zugeordnet'}</p>${gs.length ? `<div class="focus-guests">${gs.map(g => `<span>${g.name}${g.remark ? ` · ${g.remark}` : ''}</span>`).join('')}</div>` : ''}`;
+    }
+
+    function selectTable(number) {
+      if (selectedTable === number) {
+        clearSelection();
+        return;
+      }
+      selectedTable = number;
+      selectedGuest = null;
+      map.setAttribute('viewBox', initialViewBox);
+      setTableVisuals();
+      showFocusCard(number);
+      if (tableGuests(number).length) scrollToGuestForTable(number);
+    }
+    function selectGuest(id) {
+      const g = guests.find(item => item.id === id);
+      if (!g) return;
+      if (selectedGuest === id || selectedTable === g.table) {
+        clearSelection();
+        return;
+      }
+      selectedGuest = id;
+      selectedTable = g.table;
+      map.setAttribute('viewBox', initialViewBox);
+      setTableVisuals();
+      showFocusCard(g.table);
+      const btn = guestListEl.querySelector(`[data-id="${id}"]`);
+      if (btn) btn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+    function clearSelection() {
+      selectedTable = null;
+      selectedGuest = null;
+      focusCard.hidden = true;
+      map.setAttribute('viewBox', initialViewBox);
+      if (searchEl.value) {
+        searchEl.value = '';
+        if (searchClearBtn) searchClearBtn.hidden = true;
+      }
+      setTableVisuals();
+    }
+    const GUEST_LIST_FUNCTION_URL = 'https://func-vipclub-guestlist.azurewebsites.net/api/GetGuestList?code=cA0nklwBCuOHKL3lhfBLL3mGIsYx6sofb_2XsKVZ9JAEAzFuYQVjVQ==';
+    const loadStatus = document.getElementById('loadStatus');
+    const loadStatusTop = document.getElementById('loadStatusTop');
+    const eventLabel = document.getElementById('eventLabel');
+    const notesList = document.getElementById('notesList');
+
+    function setLoadStatus(message, state = '') {
+      loadStatus.textContent = message;
+      loadStatus.className = `load-status${state ? ` ${state}` : ''}`;
+      if (loadStatusTop) {
+        loadStatusTop.textContent = message;
+        loadStatusTop.className = `load-status${state ? ` ${state}` : ''}`;
+      }
+    }
+
+    function updateDeviceClock() {
+      const now = new Date();
+      const formatted = new Intl.DateTimeFormat('de-DE', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }).format(now);
+      setLoadStatus(formatted, 'success');
+      return formatted;
+    }
+
+    async function applyGuestList(data) {
+      if (!data || !Array.isArray(data.guests)) {
+        throw new Error('Die JSON-Datei enthält kein gültiges guests-Array.');
+      }
+
+      const normalizedGuests = data.guests.map((guest, index) => {
+        const table = Number(guest.table);
+        const pax = Number(guest.pax);
+        if (!guest.name || !Number.isFinite(table) || !Number.isFinite(pax)) {
+          throw new Error(`Ungültiger Gastdatensatz an Position ${index + 1}.`);
+        }
+        return {
+          id: Number(guest.id) || index + 1,
+          name: String(guest.name),
+          org: String(guest.org || 'Tischbelegung'),
+          table,
+          pax,
+          remark: String(guest.remark || '')
+        };
+      });
+
+      guests.splice(0, guests.length, ...normalizedGuests);
+      eventLabel.textContent = String(data.event || 'Spieltag');
+      const notes = Array.isArray(data.notes) ? data.notes.filter(Boolean).map(String) : [];
+      notesList.innerHTML = notes.length
+        ? notes.map(note => `<li>${note}</li>`).join('')
+        : '<li>Keine allgemeinen Anmerkungen</li>';
+      clearSelection();
+      renderGuests();
+      updateDeviceClock();
+    }
+
+    async function loadGuestList() {
+      setLoadStatus('Lade Gästeliste …');
+      try {
+        const separator = GUEST_LIST_FUNCTION_URL.includes('?') ? '&' : '?';
+        const response = await fetch(`${GUEST_LIST_FUNCTION_URL}${separator}v=${Date.now()}`, {
+          cache: 'no-store',
+          headers: {
+            'Accept': 'application/json',
+            'x-app-password': currentPassword
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        await applyGuestList(data);
+      } catch (error) {
+        setLoadStatus(`Laden fehlgeschlagen: ${error.message}`, 'error');
+        console.error('Gästeliste konnte nicht geladen werden:', error);
+      }
+    }
+
+    renderGuests();
+    updateDeviceClock();
+
+    searchEl.addEventListener('input', renderGuests);
+    searchEl.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        searchEl.blur();
+      }
+    });
+    if (searchClearBtn) {
+      searchClearBtn.addEventListener('click', () => {
+        searchEl.value = '';
+        renderGuests();
+        searchEl.blur();
+      });
+    }
+    sortSelect.addEventListener('change', () => {
+      renderGuests();
+      guestListEl.scrollTop = 0;
+    });
+    if (filterOccupiedEl && filterFreeEl) {
+      filterOccupiedEl.addEventListener('change', () => {
+        if (filterOccupiedEl.checked) filterFreeEl.checked = false;
+        renderGuests();
+        guestListEl.scrollTop = 0;
+      });
+      filterFreeEl.addEventListener('change', () => {
+        if (filterFreeEl.checked) filterOccupiedEl.checked = false;
+        renderGuests();
+        guestListEl.scrollTop = 0;
+      });
+    }
+    document.getElementById('clearBtn').addEventListener('click', clearSelection);
+
+    const APP_PASSWORD = 'vipclub';
+    let currentPassword = '';
+    const authGate = document.getElementById('authGate');
+    const authForm = document.getElementById('authForm');
+    const authPassword = document.getElementById('authPassword');
+    const authError = document.getElementById('authError');
+
+    authForm.addEventListener('submit', event => {
+      event.preventDefault();
+      authPassword.blur();
+      if (authPassword.value === APP_PASSWORD) {
+        currentPassword = authPassword.value;
+        document.body.classList.remove('auth-locked');
+        authGate.hidden = true;
+        authPassword.value = '';
+        authError.textContent = '';
+        loadGuestList();
+      } else {
+        authError.textContent = 'Passwort ist nicht korrekt.';
+        authPassword.select();
+      }
+    });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(registration => {
+            // Bei jedem App-Start prüfen, ob eine neuere sw.js vorliegt (wichtig für
+            // installierte Home-Screen-PWA, die sonst lange am alten SW-Stand hängen kann).
+            registration.update().catch(() => {});
+          })
+          .catch(error => console.warn('PWA-Service-Worker konnte nicht registriert werden:', error));
+      });
+    }
+
+    // Tastatur-Fix: Die virtuelle Tastatur deckt auf iPad/iPhone den unteren Seitenbereich ab,
+    // ohne dass der Browser die Seitenhöhe automatisch anpasst. Wir beobachten die tatsächlich
+    // sichtbare Höhe über die visualViewport-API und schrumpfen die App-Höhe entsprechend,
+    // damit die Gästeliste über der Tastatur sichtbar bleibt statt darunter zu verschwinden.
+    if (window.visualViewport) {
+      const vv = window.visualViewport;
+      function updateViewportHeight() {
+        const fullHeight = window.innerHeight;
+        const visibleHeight = vv.height;
+        const keyboardLikelyOpen = (fullHeight - visibleHeight) > 120;
+        document.documentElement.style.setProperty('--app-vh', `${visibleHeight}px`);
+        document.body.classList.toggle('keyboard-open', keyboardLikelyOpen);
+      }
+      vv.addEventListener('resize', updateViewportHeight);
+      vv.addEventListener('scroll', updateViewportHeight);
+      updateViewportHeight();
+    }
+    searchEl.addEventListener('focus', () => {
+      window.setTimeout(() => {
+        searchEl.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      }, 300);
+    });
+  </script>
+</body>
+</html>
